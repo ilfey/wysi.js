@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+		"module": "commonjs",
+		"moduleResolution": "node",
+
+		"forceConsistentCasingInFileNames": true,
+		"allowSyntheticDefaultImports": true,
+		"noFallthroughCasesInSwitch": true,
+		"noUnusedParameters": true,
+		"noImplicitReturns": true,
+		"esModuleInterop": true,
+		"removeComments": true,
+		"noUnusedLocals": true,
+		"noImplicitThis": true,
+		"skipLibCheck": true,
+		"declaration": true,
+		"sourceMap": true,
+		"outDir": "dist",
+		"rootDir": "src",
+		"target": "es6",
+		"strict": true
+  }
+}

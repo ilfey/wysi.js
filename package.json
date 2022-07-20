@@ -1,0 +1,31 @@
+{
+  "name": "wysi.js",
+  "version": "0.1.0",
+  "description": "",
+  "main": "dist/index.js",
+	"types": "dist/index.d.ts",
+	"files": [
+		"dist"
+	],
+  "scripts": {
+    "build": "tsc -p ."
+  },
+  "homepage": "https://github.com/JQweenq/wysi.js#README.md",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/JQweenq/wysi.js"
+	},
+	"bugs": {
+		"url": "https://github.com/JQweenq/wysi.js/issues"
+	},
+	"keywords": [
+		"neural network",
+		"HL"
+	],
+	"author": "Josty Qweenq",
+	"license": "MIT",
+  "devDependencies": {
+		"typescript": "^4.7.4",
+    "tsc": "^2.0.4"
+  }
+}
