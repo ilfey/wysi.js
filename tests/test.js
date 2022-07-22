@@ -1,26 +1,23 @@
-const {Network, random} = require("../dist/index");
+const {Network, random, random2d} = require("../dist/index");
+const { Debugger } = require("../dist/debugger");
+
+const debug = Debugger(true)
 
 const network = Network({
-	learning_rate: 0.1
+	// debug: false,
+	// learning_rate: 0.1,
+	// inputWeights: random2d(6,8),
+	// hiddenWeights: random2d(8,1)
 })
-console.log(
+
+debug.success(
 	network.train({
-		eras: 1_000_000,
-		inputLayer: [1, 1],
-		inputWeights: [ // two input neurons and three hidden neurons
-			[random(), random(), random()],
-			[random(), random(), random()],
-		],
-		hiddenWeights: [ // one output neuron and three hidden neurons
-			[random()],
-			[random()],
-			[random()],
-		],
+		eras: 100_000,
+		inputLayer: [1,1],
 		actualOutputLayer: [1]
 	})
 );
 
-
-console.log(network.predict({
-	inputLayer: [1, 1]
+debug.success(network.predict({
+	inputLayer: [1,1],
 }));
