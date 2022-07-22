@@ -1,27 +1,8 @@
 import { Debugger, IDebugger } from "./debugger";
+import { transpose, random2d, calculateSum, calculateWeights, activate } from "./utils";
 
-export function transpose(array: Array<number>[]): Array<number>[] {
-	return array[0].map((_column: number, index: number) => array.map((row: Array<number>) => row[index]))
-}
-
-export function random() {
-	return Math.random() * (1 + 1) - 1
-}
-
-export function random2d(columns: number, rows: number): Array<number>[] {
-	let arr: Array<number>[] = [];
-	for (let i = 0; i < columns; i++) {
-		arr[i] = [];
-		for (let j = 0; j < rows; j++) {
-			arr[i][j] = random();
-		}
-	}
-	return arr;
-}
 
 export const Network = (opts: IOpts | undefined): INetwork => {
-
-	let debug: IDebugger = Debugger(opts!.debug)
 
 	if (!opts) {
 		opts = {
@@ -46,44 +27,51 @@ export const Network = (opts: IOpts | undefined): INetwork => {
 
 	opts.learning_rate = opts.learning_rate ? opts.learning_rate : 0.1;
 
-	debug.info(opts)
+	let debug: IDebugger = Debugger(opts.debug);
+
+	debug.info(opts);
 
 	let network: INetwork = {
-		_inputWeights: opts.inputWeights!,
-		_hiddenWeights: opts.hiddenWeights!,
+		_inputWeights: transpose(opts.inputWeights!),
+		_hiddenWeights: transpose(opts.hiddenWeights!),
 		predict: (data: IPeridictData): Array<number> => {
 
 			debug.info("Start predict...")
 
-			network._inputWeights = data.inputWeights ? data.inputWeights! : network._inputWeights;
-			network._hiddenWeights = data.hiddenWeights ? data.hiddenWeights! : network._hiddenWeights;
+			if (data.inputWeights) {
+				network._inputWeights = transpose(data.inputWeights);
+			}
 
-			debug.info("inputWeights", network._inputWeights)
-			debug.info("hiddenWeights", network._hiddenWeights)
+			if (data.hiddenWeights) {
+				network._hiddenWeights = transpose(data.hiddenWeights);
+			}
+
+			debug.info("inputWeights", network._inputWeights);
+			debug.info("hiddenWeights", network._hiddenWeights);
 
 
-			network._hiddenLayerSum = transpose(network._inputWeights).map((neuronWeights: Array<number>) => {
-				return neuronWeights.reduce((prev: number, curr: number, index: number) => {
-					return prev + curr * data.inputLayer[index];
-				}, neuronWeights[0] * data.inputLayer[0]);
-			});
-
+			network._hiddenLayerSum = calculateSum(data.inputLayer, network._inputWeights);
 			network._hiddenLayer = network._hiddenLayerSum.map((neuron: number) => opts!.activation(neuron));
 
-			network._outputLayerSum = transpose(network._hiddenWeights).map((neuronWeights: Array<number>) => {
-				return neuronWeights.reduce((prev: number, curr: number, index: number) => {
-					return prev + curr * network._hiddenLayer![index];
-				}, neuronWeights[0] * network._hiddenLayer![0]);
-			});
+			network._outputLayerSum = calculateSum(network._hiddenLayer, network._hiddenWeights);
+			const outputLayer = network._outputLayerSum.map(neuron => opts!.activation(neuron));
 
-			return network._outputLayerSum.map(neuron => opts!.activation(neuron));
+			debug.success("End predict");
+			debug.info("outputLayer", outputLayer);
+
+			return outputLayer;
 		},
 		train: (data: ITrainData): ITrainedWeights => {
 
 			debug.info("Start learning...")
 
-			network._inputWeights = data.inputWeights ? data.inputWeights : network._inputWeights
-			network._hiddenWeights = data.hiddenWeights ? data.hiddenWeights : network._hiddenWeights
+			if (data.inputWeights) {
+				network._inputWeights = transpose(data.inputWeights);
+			}
+
+			if (data.hiddenWeights) {
+				network._hiddenWeights = transpose(data.hiddenWeights);
+			}
 
 			debug.info("start inputWeights", network._inputWeights)
 			debug.info("start hiddenWeights", network._hiddenWeights)
@@ -92,46 +80,31 @@ export const Network = (opts: IOpts | undefined): INetwork => {
 			for (let i = 0; i < data.eras; i++) {
 
 				let outputLayer = network.predict({
-					inputLayer: data.inputLayer,
-					inputWeights: network._inputWeights,
-					hiddenWeights: network._hiddenWeights
+					inputLayer: data.inputLayer
 				});
 
 				const outputError = data.actualOutputLayer.map((neuron: number, index: number) => neuron - outputLayer[index]);
 
-				let weightsDelta: Array<number> = network._outputLayerSum!.map((sum: number, index: number) => outputError[index] * opts!.activation_dx(sum));
+				const weightsDelta: Array<number> = network._outputLayerSum!.map((sum: number, index: number) => outputError[index] * opts!.activation_dx(sum));
 
-				network._hiddenWeights = transpose(network._hiddenWeights).map((neuronWeights, neuronWeightsIndex) => {
-					return neuronWeights.map((weight, weightIndex) => {
-						return weight - (network._hiddenLayer![weightIndex] * weightsDelta[neuronWeightsIndex] * opts!.learning_rate!);
-					});
-				});
+				network._hiddenWeights = calculateWeights(network._hiddenWeights, network._hiddenLayer!, weightsDelta, opts!.learning_rate!);
 
-				network._hiddenLayerSum = transpose(network._hiddenWeights).map((neuronWeights: Array<number>) => {
-					return neuronWeights.reduce((prev: number, curr: number, index: number) => {
-						return prev + curr * weightsDelta[index]
-					}, neuronWeights[0] * weightsDelta[0]);
-				});
+				network._hiddenLayer = activate(weightsDelta, transpose(network._hiddenWeights), opts!.activation);
 
-				network._hiddenLayer = network._hiddenLayerSum.map((neuron => opts!.activation(neuron)));
-
-				network._inputWeights = transpose(network._inputWeights).map((neuronWeights, neuronWeightsIndex) => {
-					return neuronWeights.map((weight, weightIndex) => {
-						return weight - (data.inputLayer[weightIndex] * network._hiddenLayer![neuronWeightsIndex] * opts!.learning_rate!);
-					});
-				});
-
-				network._hiddenWeights = transpose(network._hiddenWeights);
-				network._inputWeights = transpose(network._inputWeights);
+				network._inputWeights = calculateWeights(network._inputWeights, data.inputLayer, network._hiddenLayer, opts!.learning_rate!);
 			}
-			debug.success("End learning.")
 
-			debug.info("inputWeights", network._inputWeights)
-			debug.info("hiddenWeights", network._hiddenWeights)
+			const hiddenWeights = transpose(network._hiddenWeights);
+			const inputWeights = transpose(network._inputWeights);
+
+			debug.success("End learning.");
+
+			debug.info("inputWeights", inputWeights);
+			debug.info("hiddenWeights", hiddenWeights);
 
 			return {
-				inputWeights: network._inputWeights,
-				hiddenWeights: network._hiddenWeights,
+				inputWeights,
+				hiddenWeights,
 			}
 		}
 	}
