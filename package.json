@@ -7,11 +7,16 @@
 	"files": [
 		"dist"
 	],
-  "scripts": {
-    "build": "tsc -p .",
-		"build:watch": "tsc -p . -w"
-  },
-  "homepage": "https://github.com/JQweenq/wysi.js#README.md",
+	"scripts": {
+		"run:go": "go run ./src/go/main.go",
+		"build": "tsc -p . && bash build.sh all",
+		"build:ts": "tsc -p .",
+		"build:go": "bash build.sh all",
+		"build:win": "bash build.sh win",
+		"build:macos": "bash build.sh mac",
+		"build:linux": "bash build.sh linux"
+	},
+	"homepage": "https://github.com/JQweenq/wysi.js#README.md",
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/JQweenq/wysi.js"
