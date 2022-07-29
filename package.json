@@ -1,14 +1,14 @@
 {
-  "name": "wysi.js",
-  "version": "0.1.0",
-  "description": "",
-  "main": "dist/index.js",
+	"name": "wysi.js",
+	"version": "0.1.0",
+	"description": "",
+	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
 	"files": [
 		"dist"
 	],
 	"scripts": {
-		"run:go": "go run ./src/go/main.go",
+		"run:go": "go run ./src/go/*.go",
 		"build": "tsc -p . && bash build.sh all",
 		"build:ts": "tsc -p .",
 		"build:go": "bash build.sh all",
@@ -30,8 +30,9 @@
 	],
 	"author": "Josty Qweenq",
 	"license": "MIT",
-  "devDependencies": {
-		"typescript": "^4.7.4",
-    "tsc": "^2.0.4"
-  }
+	"devDependencies": {
+		"@types/node": "^18.6.2",
+		"tsc": "^2.0.4",
+		"typescript": "^4.7.4"
+	}
 }
