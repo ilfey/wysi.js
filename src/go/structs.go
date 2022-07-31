@@ -2,10 +2,6 @@ package main
 
 type Network struct {
 	inputWeights   [][]float64
-	hiddenLayerSum []float64
-	hiddenLayer    []float64
-	hiddenWeights  [][]float64
-	outputLayerSum []float64
 	outputLayer    []float64
 }
 
